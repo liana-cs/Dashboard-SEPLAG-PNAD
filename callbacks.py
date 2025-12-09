@@ -1,8 +1,8 @@
 from dash import Input, Output, html, dcc
 from dash.dependencies import ALL, MATCH
+import plotly.express as px 
 
 from styles import colors, card_style_base, tab_style, tab_selected_style
-from components import layout_three_charts
 
 def register_callbacks(app, df, anos_disponiveis, ano_default):
     # Título
@@ -13,7 +13,7 @@ def register_callbacks(app, df, anos_disponiveis, ano_default):
     def update_titulo_dashboard(tab_top):
         return "PNAD Contínua – Ocupação e Renda em Pernambuco"
 
-    # Conteúdo da aba de topo
+    # aba de topo
     @app.callback(
         Output("tab-content-top", "children"),
         Input("tabs-top", "value"),
@@ -21,24 +21,24 @@ def register_callbacks(app, df, anos_disponiveis, ano_default):
     def render_tab_top(tab_top):
         if tab_top == "apresentacao":
             vars_info = [
-                ("n_ocup_pond",
-                 "Número de ocupados ponderado (soma dos pesos amostrais V1028 para todas as pessoas ocupadas)."),
-                ("renda_total_pond",
-                 "Soma ponderada da renda total do trabalho (trabalho principal + trabalho secundário + outros rendimentos de trabalho)."),
-                ("Renda Média_Total",
-                 "Renda média do trabalho para o total de ocupados (renda_total_pond / n_ocup_pond)."),
-                ("n_empregador_pond",
-                 "Número ponderado de empregadores (pessoas ocupadas na condição de empregador)."),
-                ("renda_empregador_pond",
-                 "Renda total ponderada do trabalho dos empregadores."),
-                ("Renda Média_empregador",
-                 "Renda média do trabalho dos empregadores (renda_empregador_pond / n_empregador_pond)."),
-                ("n_conta_propria_pond",
-                 "Número ponderado de trabalhadores por conta própria."),
-                ("renda_conta_propria_pond",
-                 "Renda total ponderada do trabalho dos trabalhadores por conta própria."),
-                ("Renda Média_conta_propria",
-                 "Renda média do trabalho dos conta própria (renda_conta_propria_pond / n_conta_propria_pond)."),
+                ("Número de ocupados",
+                 "Número de ocupados ponderado, representado pela variável 'n_ocup_pond'."),
+                ("Renda total do trabalho",
+                 "Soma ponderada da renda total do trabalho (trabalho principal + trabalho secundário + outros rendimentos de trabalho), representado pela variável 'renda_total_pond'."),
+                ("Renda Média Total",
+                 "Renda média do trabalho para o total de ocupados (renda_total_pond / n_ocup_pond), representado pela variável Renda_Média_Total."),
+                ("Número de empregadores ",
+                 "Número ponderado de empregadores (pessoas ocupadas na condição de empregador), representado pela variável 'n_empregador_pond'."),
+                ("Renda total do trabalho dos empregadores",
+                 "Renda total ponderada do trabalho dos empregadores, representado pela variável 'renda_empregador_pond'."),
+                ("Renda média do trabalho dos empregadores",
+                 "Renda média do trabalho dos empregadores (renda_empregador_pond / n_empregador_pond), representado pela variável 'Renda_Média_empregador."),
+                ("Número de trabalhadores por conta própria",
+                 "Número ponderado de trabalhadores por conta própria, representado pela variável 'n_conta_propria_pond'."),
+                ("Renda total do trabalho dos trabalhadores por conta própria",
+                 "Renda total ponderada do trabalho dos trabalhadores por conta própria, representado pela variável 'renda_conta_propria_pond'."),
+                ("Renda Média de trabalhadores por conta própria",
+                 "Renda média do trabalho dos conta própria (renda_conta_propria_pond / n_conta_propria_pond), representado pela variável 'Renda_Média_conta_propria'."),
             ]
 
             info_card = html.Div(
@@ -135,71 +135,234 @@ def register_callbacks(app, df, anos_disponiveis, ano_default):
                 },
             )
 
-        # Aba "Módulos"
+        # "Módulos"
         return html.Div(
-            [
-                dcc.Tabs(
-                    id="tabs-modulo",
-                    value="total",
-                    children=[
-                        dcc.Tab(label="Total de Ocupados", value="total", style=tab_style, selected_style=tab_selected_style),
-                        dcc.Tab(label="Empregadores", value="empregador", style=tab_style, selected_style=tab_selected_style),
-                        dcc.Tab(label="Conta Própria", value="conta_propria", style=tab_style, selected_style=tab_selected_style),
-                    ],
-                ),
-                html.Div(
-                    [
-                        html.Label(
-                            "Ano",
-                            style={
-                                "fontWeight": "bold",
-                                "marginRight": "8px",
-                                "color": colors["primary"],
-                            },
-                        ),
-                        dcc.Dropdown(
-                            id="filter-ano",
-                            options=[{"label": str(a), "value": int(a)} for a in anos_disponiveis],
-                            value=ano_default,
-                            clearable=False,
-                            style={"width": "180px"},
-                        ),
-                    ],
-                    style={
-                        "display": "flex",
-                        "alignItems": "center",
-                        "gap": "10px",
-                        "padding": "12px 0 8px 0",
-                    },
-                ),
-                html.Div(id="tab-content-modulo"),
-            ]
-        )
+        [
+            # abas internas 
+            dcc.Tabs(
+                id="tabs-modulo",
+                value="total",
+                children=[
+                    dcc.Tab(
+                        label="Total de Ocupados",
+                        value="total",
+                        style=tab_style,
+                        selected_style=tab_selected_style,
+                    ),
+                    dcc.Tab(
+                        label="Empregadores",
+                        value="empregador",
+                        style=tab_style,
+                        selected_style=tab_selected_style,
+                    ),
+                    dcc.Tab(
+                        label="Conta Própria",
+                        value="conta_propria",
+                        style=tab_style,
+                        selected_style=tab_selected_style,
+                    ),
+                ],
+            ),
 
-    # Conteúdo dos módulos
+            # filtros 
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Label(
+                                "Ano",
+                                style={
+                                    "fontWeight": "bold",
+                                    "marginRight": "8px",
+                                    "color": colors["primary"],
+                                },
+                            ),
+                            dcc.Dropdown(
+                                id="filter-ano",
+                                options=(
+                                    [{"label": "Todos os anos", "value": "Todos"}] +
+                                    [{"label": str(a), "value": int(a)} for a in anos_disponiveis]
+                                ),
+                                value="Todos",          
+                                clearable=False,
+                                style={"width": "200px"},
+                            ),
+
+                        ],
+                        style={"display": "flex", "alignItems": "center", "gap": "8px"},
+                    ),
+                    html.Div(
+                        [
+                            html.Label(
+                                "Tipo de gráfico",
+                                style={
+                                    "fontWeight": "bold",
+                                    "marginRight": "8px",
+                                    "color": colors["primary"],
+                                },
+                            ),
+                            dcc.Dropdown(
+                                id="filter-grafico",
+                                options=[
+                                    {"label": "Quantidade (n_ocup_pond)", "value": "qtd"},
+                                    {"label": "Renda Total (renda_total_pond)", "value": "renda_total"},
+                                    {"label": "Renda Média (Renda_Média_total)", "value": "renda_media"},
+                                ],
+                                value="qtd",
+                                clearable=False,
+                                style={"width": "260px"},
+                            ),
+                        ],
+                        style={"display": "flex", "alignItems": "center", "gap": "8px"},
+                    ),
+                ],
+                style={
+                    "display": "flex",
+                    "flexWrap": "wrap",
+                    "justifyContent": "flex-start",
+                    "gap": "20px",
+                    "padding": "12px 0 12px 0",
+                },
+            ),
+
+            html.Div(id="tab-content-modulo"),
+        ]
+    )
+
     @app.callback(
         Output("tab-content-modulo", "children"),
         Input("tabs-modulo", "value"),
         Input("filter-ano", "value"),
+        Input("filter-grafico", "value"),
     )
-    def render_modulo(tab_mod, ano_sel):
-        if ano_sel is None:
+    def render_modulo(tab_mod, ano_sel, tipo_grafico):
+        if ano_sel in (None, "Todos"):
             dff = df.copy()
         else:
             dff = df[df["Ano"] == ano_sel].copy()
 
         if tab_mod == "total":
-            return layout_three_charts(dff, "n_ocup_pond", "renda_total_pond",
-                                       "Renda Média_Total", "Total de Ocupados")
-        if tab_mod == "empregador":
-            return layout_three_charts(dff, "n_empregador_pond", "renda_empregador_pond",
-                                       "Renda Média_empregador", "Empregadores")
-        if tab_mod == "conta_propria":
-            return layout_three_charts(dff, "n_conta_propria_pond", "renda_conta_propria_pond",
-                                       "Renda Média_conta_propria", "Trabalhadores por Conta Própria")
-        return html.Div("Selecione um módulo.")
+            col_qtd   = "n_ocup_pond"
+            col_rtot  = "renda_total_pond"
+            col_rmed  = "Renda Média_Total"
+            titulo_mod = "Total de Ocupados"
+        elif tab_mod == "empregador":
+            col_qtd   = "n_empregador_pond"
+            col_rtot  = "renda_empregador_pond"
+            col_rmed  = "Renda Média_empregador"
+            titulo_mod = "Empregadores"
+        else:  
+            col_qtd   = "n_conta_propria_pond"
+            col_rtot  = "renda_conta_propria_pond"
+            col_rmed  = "Renda Média_conta_propria"
+            titulo_mod = "Trabalhadores por Conta Própria"
 
-    # Abrir/fechar descrições
+        if tipo_grafico == "qtd":
+            y_col = col_qtd
+            y_label = col_qtd
+            titulo = f"{titulo_mod} – Quantidade"
+            modo = "qtd"
+        elif tipo_grafico == "renda_total":
+            y_col = col_rtot
+            y_label = col_rtot
+            titulo = f"{titulo_mod} – Renda Total"
+            modo = "renda_total"
+        else:  
+            y_col = col_rmed
+            y_label = col_rmed
+            titulo = f"{titulo_mod} – Renda Média"
+            modo = "renda_media"
+
+        if modo == "qtd":
+            fig = px.bar(
+                dff,
+                x="Periodo",
+                y=y_col,
+                title=titulo,
+            )
+            fig.update_traces(marker_color=colors["primary"])
+            fig.update_yaxes(tickformat="~s")
+
+        elif modo == "renda_total":
+            fig = px.bar(
+                dff,
+                x="Periodo",
+                y=y_col,
+                title=titulo,
+            )
+            fig.update_traces(marker_color=colors["accent"])
+
+            y_vals = dff[y_col].dropna().to_numpy()
+            if y_vals.size > 0:
+                y_min = float(y_vals.min())
+                y_max = float(y_vals.max())
+
+                n_ticks = 5
+                y_start = 0.0
+                step = (y_max - y_start) / (n_ticks - 1) if n_ticks > 1 else y_max or 1.0
+                tick_vals = [y_start + i * step for i in range(n_ticks)]
+
+                def fmt_bmk(v):
+                    v = float(v)
+                    sign = "-" if v < 0 else ""
+                    v_abs = abs(v)
+                    if v_abs >= 1e9:
+                        return f"{sign}R$ {v_abs/1e9:.1f}B"
+                    elif v_abs >= 1e6:
+                        return f"{sign}R$ {v_abs/1e6:.1f}M"
+                    elif v_abs >= 1e3:
+                        return f"{sign}R$ {v_abs/1e3:.1f}K"
+                    else:
+                        return f"{sign}R$ {v_abs:.0f}"
+
+                tick_text = [fmt_bmk(v) for v in tick_vals]
+                fig.update_yaxes(tickvals=tick_vals, ticktext=tick_text)
+            else:
+                fig.update_yaxes(tickprefix="R$ ", tickformat=".0f")
+
+        else:  
+            fig = px.line(
+                dff,
+                x="Periodo",
+                y=y_col,
+                markers=True,
+                title=titulo,
+            )
+            fig.update_traces(
+                line=dict(color=colors["secondary"], width=3),
+                marker=dict(color=colors["accent"], size=8),
+            )
+            fig.update_yaxes(tickformat=".0f", separatethousands=True, tickprefix="R$ ", rangemode="tozero")
+
+        fig.update_layout(
+            showlegend=False,
+            xaxis_title=None,
+            yaxis_title=None,
+            title_x=0.5,
+            title_font=dict(size=18, color=colors["primary"]),
+            margin=dict(t=80, l=60, r=40, b=60),
+            plot_bgcolor="#ffffff",
+            paper_bgcolor=colors["card"],
+            height=450,
+        )
+        fig.update_xaxes(showgrid=False, linecolor="#cccccc")
+        fig.update_yaxes(showgrid=True, gridcolor="#e0e0e0")
+
+        card = html.Div(
+            dcc.Graph(figure=fig),
+            style={
+                "width": "auto",
+                "backgroundColor": colors["card"],
+                "borderRadius": "12px",
+                "boxShadow": "0 2px 6px rgba(0,0,0,0.1)",
+                "padding": "8px",
+                "overflow": "hidden",
+                "marginRight": "auto",
+            },
+        )
+
+        return card
+
     @app.callback(
         Output({"type": "var-desc", "index": MATCH}, "style"),
         Output({"type": "var-btn", "index": MATCH}, "style"),

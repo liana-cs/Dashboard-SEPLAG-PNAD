@@ -48,4 +48,4 @@ app.layout = make_layout()
 register_callbacks(app, df, anos_disponiveis, ano_default)
 
 if __name__ == "__main__":
-    app.run_server(debug=True, host="127.0.0.1", port=8050)
+    app.run_server(debug=True, host="0.0.0.0", port=8050)

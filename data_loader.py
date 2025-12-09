@@ -1,13 +1,14 @@
 import pandas as pd
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent 
+DATA_PATH = BASE_DIR / "data" / "Tabela1-Renda Total da Forca de Trabalho e Renda total das Familias Produtoras Por Cnae.xlsx"
 
-DATA_PATH = BASE_DIR / "data" / "Tabela1-Renda Total da Forca de Trabalho e Renda total das Famílias Produtoras Por Cnae.xlsx"
 SHEET_NAME = "Estatísticas - Agregadas"
 
-def load_data(path: str | Path = DATA_PATH, sheet_name: str = SHEET_NAME) -> pd.DataFrame:
-    p = str(path).lower()
+def load_data(path: str = DATA_PATH, sheet_name: str = SHEET_NAME) -> pd.DataFrame:
+    path = str(path)
+    p = path.lower()
     if p.endswith(".xlsx") or p.endswith(".xls"):
         df = pd.read_excel(path, sheet_name=sheet_name)
     else:

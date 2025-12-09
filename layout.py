@@ -6,7 +6,6 @@ def make_layout():
         [
             html.Div(
                 [
-                    # Header
                     html.Div(
                         [
                             html.Img(
@@ -33,6 +32,15 @@ def make_layout():
                                     "marginRight": "20px",
                                 }
                             ),
+                            html.Img(
+                                src="/assets/igpe_logo_white.png",
+                                style={
+                                    "height": "115px",
+                                    "marginLeft": "20px",
+                                    "marginRight": "20px",
+                                },
+
+                            )
                         ],
                         style={
                             "display": "flex",
@@ -46,7 +54,7 @@ def make_layout():
                             "borderTopRightRadius": "16px",
                         },
                     ),
-                    # Abas de topo
+                    # abas de topo
                     dcc.Tabs(
                         id="tabs-top",
                         value="apresentacao",
